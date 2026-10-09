@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Health Bridge — Open nutrition</title>
+<style>body{font:16px system-ui,sans-serif;max-width:480px;margin:8vh auto;padding:24px;color:#172333}a.button{display:block;text-align:center;background:#1768ad;color:white;text-decoration:none;border-radius:12px;padding:16px;font-weight:600}p{line-height:1.5}.note{font-size:13px;color:#576576}</style></head>
+<body><h1>Health Bridge</h1><p>Open your nutrition entry in the Android app, review the values and confirm before saving to Health Connect.</p><a class="button" id="open" href="#">Open in Health Bridge</a><p class="note">No nutrition data is sent to this website's server. The values in the URL may be saved in browser history, so avoid sensitive descriptions.</p>
+<script>
+const params = new URLSearchParams(location.search);
+const allowed = ['name','kcal','protein','fat','carbs','meal'];
+const query = new URLSearchParams();
+for(const key of allowed){if(params.has(key))query.set(key,params.get(key));}
+const appUrl = 'healthbridge://nutrition?'+query.toString();
+document.getElementById('open').href = appUrl;
+</script></body></html>
