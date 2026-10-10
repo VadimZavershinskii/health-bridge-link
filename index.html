@@ -5,10 +5,32 @@
 <style>body{font:16px system-ui,sans-serif;max-width:480px;margin:8vh auto;padding:24px;color:#172333}a.button{display:block;text-align:center;background:#1768ad;color:white;text-decoration:none;border-radius:12px;padding:16px;font-weight:600}p{line-height:1.5}.note{font-size:13px;color:#576576}</style></head>
 <body><h1>Health Bridge</h1><p>Open your nutrition entry in the Android app, review the values and confirm before saving to Health Connect.</p><a class="button" id="open" href="#">Open in Health Bridge</a><p class="note">No nutrition data is sent to this website's server. Fragment-based links do not send meal details in HTTP requests, but the full link may still be visible in ChatGPT, browser history, or screenshots. Avoid sensitive descriptions.</p>
 <script>
-const params = new URLSearchParams(location.hash.startsWith('#name=') ? location.hash.slice(1) : location.search);
-const allowed = ['name','kcal','protein','fat','carbs','meal','id'];
+const button = document.getElementById('open');
+const raw = location.hash.startsWith('#name=') ? location.hash.slice(1) : location.search.slice(1);
+const allowed = new Set(['name','kcal','protein','fat','carbs','meal','id']);
+const meals = new Set(['Breakfast','Morning snack','Lunch','Afternoon snack','Dinner','Evening snack']);
+let valid = raw.length > 0 && raw.length <= 3500;
+const params = new URLSearchParams(raw);
 const query = new URLSearchParams();
-for(const key of allowed){if(params.has(key))query.set(key,params.get(key));}
-const appUrl = 'healthbridge://nutrition?'+query.toString();
-document.getElementById('open').href = appUrl;
+const seen = new Set();
+for (const [key, value] of params) {
+  if (!allowed.has(key) || seen.has(key)) valid = false;
+  seen.add(key);
+  if (key === 'name' && (!value.trim() || value.length > 200 || /[\\x00-\\x1f\\x7f]/.test(value))) valid = false;
+  if (key === 'meal' && !meals.has(value)) valid = false;
+  if (key === 'id' && !/^[A-Za-z0-9_-]{8,100}$/.test(value)) valid = false;
+  if (['kcal','protein','fat','carbs'].includes(key)) {
+    const max = key === 'kcal' ? 10000 : 1000;
+    if (!value.trim() || value.length > 24 || !Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > max) valid = false;
+  }
+  query.set(key, value);
+}
+if (!params.has('kcal')) valid = false;
+if (valid) {
+  button.href = 'healthbridge://nutrition?' + query.toString();
+} else {
+  button.removeAttribute('href');
+  button.textContent = 'Invalid nutrition link';
+  button.setAttribute('aria-disabled', 'true');
+}
 </script></body></html>
