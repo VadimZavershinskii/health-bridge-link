@@ -9,6 +9,11 @@ const params = new URLSearchParams(location.hash.startsWith('#name=') ? location
 const allowed = ['name','kcal','protein','fat','carbs','meal','id'];
 const query = new URLSearchParams();
 for(const key of allowed){if(params.has(key))query.set(key,params.get(key));}
-const appUrl = 'healthbridge://nutrition?'+query.toString();
-document.getElementById('open').href = appUrl;
+const button = document.getElementById('open');
+if (params.has('name') && params.has('kcal') && params.has('id')) {
+  button.href = 'healthbridge://nutrition?' + query.toString();
+} else {
+  button.removeAttribute('href');
+  button.textContent = 'Invalid nutrition link';
+}
 </script></body></html>
